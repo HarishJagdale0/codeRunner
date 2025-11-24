@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Full Stack Web Demo — JS + TypeScript + Python</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Pyodide (Python in Browser) -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
+
+  <!-- In-browser TypeScript Compiler -->
+  <script src="https://typescript.azureedge.net/cdn/4.6.2/typescript.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 40px;
+      background: #f5f7fa;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      padding: 10px;
+      font-size: 15px;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      margin: 10px 5px 20px 0;
+      cursor: pointer;
+      border: none;
+      background: #0078ff;
+      color: white;
+      border-radius: 6px;
+    }
+    #output {
+      background: #eee;
+      padding: 15px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Full Stack Web Demo<br>(JavaScript + TypeScript + Python)</h1>
+
+  <h3>Enter text (Python will process it):</h3>
+  <textarea id="inputText"></textarea>
+
+  <button onclick="runPython()">Run Python</button>
+  <button onclick="runTypeScript()">Run TypeScript</button>
+  <button onclick="runJS()">Run JavaScript</button>
+
+  <h3>Output:</h3>
+  <div id="output">Output will appear here...</div>
+</div>
+
+<script>
+/* -------------------------------
+   🐍 Load Pyodide (Python Engine)
+--------------------------------- */
+let pyodideReady = null;
+
+async function loadPyodideAndPackages() {
+  const pyodide = await loadPyodide();
+  return pyodide;
+}
+
+pyodideReady = loadPyodideAndPackages();
+
+
+/* -------------------------------
+   🐍 Python Code (Runs in Browser)
+--------------------------------- */
+async function runPython() {
+  const py = await pyodideReady;
+
+  const text = document.getElementById("inputText").value;
+
+  // Python code as a string
+  const pythonCode = `
+text = """${text}"""
+# Simple Python processing: reverse text + count words
+reversed_text = text[::-1]
+word_count = len(text.split())
+result = f"Python says:\\nReversed: {reversed_text}\\nWord Count: {word_count}"
+result
+`;
+
+  let result = await py.runPythonAsync(pythonCode);
+  document.getElementById("output").innerText = result;
+}
+
+
+/* -------------------------------
+   🔷 TypeScript Code (Compiled Live)
+--------------------------------- */
+function runTypeScript() {
+  const tsCode = `
+export function analyzeText(input: string): string {
+  const length = input.length;
+  const upper = input.toUpperCase();
+  return "TypeScript says:\\nLength: " + length + "\\nUppercase: " + upper;
+}
+`;
+
+  const jsOutput = ts.transpile(tsCode);
+  const input = document.getElementById("inputText").value;
+
+  const module = { exports: {} };
+  eval(jsOutput); // Creates module.exports.analyzeText
+
+  const result = module.exports.analyzeText(input);
+  document.getElementById("output").innerText = result;
+}
+
+
+/* -------------------------------
+   ⚡ JavaScript Code
+--------------------------------- */
+function runJS() {
+  const input = document.getElementById("inputText").value;
+
+  const result = `
+JavaScript says:
+Characters: ${input.length}
+Replaced spaces with hyphens: ${input.replace(/ /g, "-")}
+`;
+
+  document.getElementById("output").innerText = result;
+}
+</script>
+
+</body>
+</html>
+
